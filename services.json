@@ -1,0 +1,52 @@
+[
+    { 
+      "name": "AdGuard", 
+      "url": "http://10.10.10.3:3001", 
+      "description": "Network-wide software for blocking ads & tracking.",
+      "logo": "https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/AdGuardHome/icon.png",
+      "customUrl": "http://custom-url-for-adguard.com",
+      "category": "Network Tools"
+    },
+    { 
+      "name": "Home Assistant", 
+      "url": "http://10.10.10.4:8123", 
+      "description": "Asistant.",
+      "logo": "https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/HomeAssistant/icon.png",
+      "customUrl": "http://custom-url-for-adguard.com",
+      "category": "Network Tools"
+    },
+    { 
+      "name": "Cloudflared", 
+      "url": "http://10.10.10.3:3001", 
+      "description": "Cloudflare Tunnel.",
+      "logo": "https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/Cloudflared/icon.png",
+      "customUrl": "http://custom-url-for-adguard.com",
+      "category": "Network Tools"
+    },
+    { 
+        "name": "Service 2", 
+        "url": "http://10.10.10.4:3001", 
+        "description": "Description for Service 2.",
+        "logo": "https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/AdGuardHome/icon.png",
+        "customUrl": "http://custom-url-for-service2.com",
+        "category": "Utilities"
+      },
+      { 
+        "name": "Service 2", 
+        "url": "http://10.10.10.4:3001", 
+        "description": "Description for Service 2.",
+        "logo": "https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/AdGuardHome/icon.png",
+        "customUrl": "http://custom-url-for-service2.com",
+        "category": "Utilities"
+      },
+      { 
+        "name": "Service 2", 
+        "url": "http://10.10.10.4:3001", 
+        "description": "Description for Service 2.",
+        "logo": "https://cdn.jsdelivr.net/gh/IceWhaleTech/CasaOS-AppStore@main/Apps/AdGuardHome/icon.png",
+        "customUrl": "http://custom-url-for-service2.com",
+        "category": "Utilities"
+      }
+      
+  ]
+  
