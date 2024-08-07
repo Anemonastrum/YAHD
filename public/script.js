@@ -1,8 +1,18 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    const response = await fetch('/services');
-    const data = await response.json();
-    const { services, serverInfo } = data;
-  
+  try {
+    // Fetch services and server information
+    const [servicesResponse, serverInfoResponse] = await Promise.all([
+      fetch('/services'),
+      fetch('/server-info')
+    ]);
+
+    if (!servicesResponse.ok || !serverInfoResponse.ok) {
+      throw new Error('Failed to fetch data');
+    }
+
+    const services = await servicesResponse.json();
+    const serverInfo = await serverInfoResponse.json();
+
     // Display server information
     const serverInfoDiv = document.getElementById('server-info');
     const serverInfoHtml = `
@@ -16,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <p class="text-gray-700 group-hover:text-gray-200"><strong>CPU:</strong> ${serverInfo.cpus[0].model} (${serverInfo.cpus.length} cores)</p>
     `;
     serverInfoDiv.innerHTML = serverInfoHtml;
-  
+
     // Group services by category
     const servicesByCategory = services.reduce((acc, service) => {
       if (!acc[service.category]) {
@@ -25,12 +35,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       acc[service.category].push(service);
       return acc;
     }, {});
-  
+
     // Display services grouped by category
     const servicesList = document.getElementById('services-list');
     const overviewCards = document.querySelector('.grid-cols-1'); // Assuming this class is unique to overview cards
     const overviewText = document.querySelectorAll('.overview-text'); // Assuming this class is used for overview text
-  
+
     const displayServices = (filteredServicesByCategory) => {
       servicesList.innerHTML = '';
       for (const [category, services] of Object.entries(filteredServicesByCategory)) {
@@ -43,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="card bg-white rounded-xl shadow-lg p-6 flex flex-col justify-between group">
                   <div class="flex flex-row justify-between items-center">
                     <div class="logo">
-                      <img src="${service.logo}" alt="${service.name} logo">
+                      <img src="${service.logo}" alt="${service.name} logo" class="w-16 h-16 object-cover">
                     </div>
                     <div class="inline-flex text-sm text-gray-600 group-hover:text-gray-200 sm:text-base">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 ${statusColor} group-hover:text-gray-200"
@@ -55,13 +65,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                   </div>
                   <h1 class="text-2xl sm:text-3xl font-bold text-gray-700 mt-8 group-hover:text-gray-50">${service.name}</h1>
                   <p class="text-gray-600 mt-2 group-hover:text-gray-50">${service.description}</p>
-                  <div class="mt-3 flex justify-end">
+                  <div class="mt-3 flex justify-end space-x-2">
                     <a href="${service.customUrl}" target="_blank" class="btn px-4 py-2 rounded-full inline-flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                        <path fill-rule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                      </svg>
+                      Open
                     </a>
+                   <button data-modal-target="edit-service-modal" data-modal-toggle="edit-service-modal" data-service-id="${service._id}" class="btn px-4 py-2 rounded-full bg-blue-700 text-white hover:bg-blue-800 focus:ring-4 focus:ring-blue-300">
+                  Edit
+                </button>
                   </div>
                 </div>
               `;
@@ -71,9 +81,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         servicesList.insertAdjacentHTML('beforeend', categoryHtml);
       }
     };
-  
+    
+
     displayServices(servicesByCategory);
-  
+
     // Update clock every second
     const updateClock = () => {
       const now = new Date();
@@ -85,36 +96,94 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('current-time').textContent = timeString;
       document.getElementById('current-date').textContent = dateString;
     };
-  
+
     setInterval(updateClock, 1000);
     updateClock(); // Initial call to display time immediately
-  
+
     // Search function
     const searchInputDesktop = document.getElementById('search-navbar-desktop');
     const searchInputMobile = document.getElementById('search-navbar-mobile');
-    
+
     const searchFunction = (event) => {
-      const searchText = event.target.value.toLowerCase();
+      // Ensure event.target and event.target.value are defined
+      const searchText = (event.target && event.target.value) ? event.target.value.toLowerCase() : '';
       const filteredServicesByCategory = {};
-  
+    
       for (const [category, services] of Object.entries(servicesByCategory)) {
         const filteredServices = services.filter(service => service.name.toLowerCase().includes(searchText));
         if (filteredServices.length > 0) {
           filteredServicesByCategory[category] = filteredServices;
         }
       }
-  
+    
       displayServices(filteredServicesByCategory);
-  
+    
+      // Debugging: Check visibility of overview sections
+      console.log('Search Text:', searchText);
+      console.log('Filtered Services:', filteredServicesByCategory);
+    
       // Hide or show overview cards and text based on search input
       if (searchText.trim() === '') {
         overviewCards.style.display = 'grid';
+        overviewText.forEach(text => text.style.display = 'block');
       } else {
         overviewCards.style.display = 'none';
+        overviewText.forEach(text => text.style.display = 'none');
       }
     };
-  
+
     searchInputDesktop.addEventListener('input', searchFunction);
     searchInputMobile.addEventListener('input', searchFunction);
+
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const serviceForm = document.getElementById('service-form');
+
+  serviceForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(serviceForm);
+    const url = formData.get('url');
+    const customUrl = formData.get('customUrl') || url; // Set customUrl to url if not provided
+
+    const data = {
+      name: formData.get('name'),
+      url: url,
+      description: formData.get('description'),
+      logo: formData.get('logo'),
+      customUrl: customUrl,
+      category: formData.get('category')
+    };
+
+    try {
+      const response = await fetch('/api/services', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        alert('Service added successfully!');
+        serviceForm.reset();
+        // Close the modal
+        const modal = document.getElementById('service-modal');
+        if (modal) {
+          modal.classList.add('hidden');
+        }
+        // Refresh the page
+        location.reload();
+      } else {
+        alert('Failed to add service. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred. Please try again.');
+    }
   });
-  
+});
